@@ -26,11 +26,7 @@ model User {
   updatedAt      DateTime        @updatedAt
   roles          Role[]          @default([USER])
   loyaltyAccount LoyaltyAccount?
-}
-
-enum Role {
-  USER
-  ADMIN
+  bookings       Booking[]
 }
 
 model RefreshToken {
@@ -46,14 +42,15 @@ model RefreshToken {
 }
 
 model Room {
-  id          String   @id @default(uuid())
-  number      String   @unique
+  id          String    @id @default(uuid())
+  number      String    @unique
   type        String
   price       Float
   description String?
   capacity    Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
 }
 
 model LoyaltyAccount {
@@ -68,9 +65,61 @@ model LoyaltyAccount {
   @@map("loyalty_accounts")
 }
 
+model Payment {
+  id              String        @id @default(uuid())
+  bookingId       String        @unique
+  amount          Float
+  currency        String        @default("USD")
+  stripePaymentId String        @unique
+  status          PaymentStatus
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  userId        String
+  roomId        String
+  checkIn       DateTime
+  checkOut      DateTime
+  totalPrice    Float
+  depositAmount Float
+  status        BookingStatus @default(PENDING_DEPOSIT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id])
+  room    Room     @relation(fields: [roomId], references: [id])
+  payment Payment?
+
+  @@index([userId])
+  @@index([roomId])
+  @@index([checkIn, checkOut])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
 enum MembershipTier {
   STANDARD
   SILVER
   GOLD
   PLATINUM
+}
+
+enum BookingStatus {
+  PENDING_DEPOSIT
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
 }

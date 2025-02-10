@@ -12,6 +12,13 @@ export class LoyaltyService {
     PLATINUM: 10000,
   };
 
+  private readonly tierDiscounts = {
+    STANDARD: 0,
+    SILVER: 0.05,
+    GOLD: 0.1,
+    PLATINUM: 0.15,
+  };
+
   async getOrCreateAccount(userId: string) {
     let account = await this.prisma.loyaltyAccount.findUnique({
       where: { userId },
@@ -86,5 +93,9 @@ export class LoyaltyService {
       }
     }
     return null; // Already at highest tier
+  }
+
+  getTierDiscount(tier: MembershipTier): number {
+    return this.tierDiscounts[tier] || 0;
   }
 }
