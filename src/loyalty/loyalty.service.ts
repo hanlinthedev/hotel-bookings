@@ -4,6 +4,13 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class LoyaltyService {
+  private readonly pointMultipliers = {
+    STANDARD: 10, // 10 points per night
+    DELUXE: 15, // 15 points per night
+    SUITE: 25, // 25 points per night
+    PRESIDENTIAL: 40, // 40 points per night
+  };
+
   constructor(private prisma: PrismaService) {}
 
   private readonly tierThresholds = {
@@ -33,19 +40,36 @@ export class LoyaltyService {
     return account;
   }
 
-  async addPoints(userId: string, points: number) {
-    const account = await this.prisma.loyaltyAccount.update({
+  async addPoints(
+    userId: string,
+    roomType: string,
+    checkIn: Date,
+    checkOut: Date,
+  ) {
+    const stayDuration = Math.ceil(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    const pointsPerNight =
+      this.pointMultipliers[roomType] || this.pointMultipliers.STANDARD;
+    const totalPoints = pointsPerNight * stayDuration;
+
+    const loyaltyAccount = await this.prisma.loyaltyAccount.update({
       where: { userId },
       data: {
-        points: { increment: points },
+        points: {
+          increment: totalPoints,
+        },
       },
     });
 
-    await this.updateTier(userId, account.points);
-    return account;
+    // Update the tier based on new total points
+    await this.updateTier(userId, loyaltyAccount.points);
+
+    return loyaltyAccount;
   }
 
-  private async updateTier(userId: string, points: number): Promise<void> {
+  public async updateTier(userId: string, points: number): Promise<void> {
     let newTier: MembershipTier = 'STANDARD';
 
     if (points >= this.tierThresholds.PLATINUM) {

@@ -79,7 +79,16 @@ describe('LoyaltyService', () => {
 
       prismaService.loyaltyAccount.update.mockResolvedValue(mockAccount);
 
-      const result = await service.addPoints('user-123', 100);
+      const checkIn = new Date('2024-01-01');
+      const checkOut = new Date('2024-01-03');
+
+      const result = await service.addPoints(
+        'user-123',
+        'DELUXE',
+        checkIn,
+        checkOut,
+      );
+
       expect(result).toEqual(mockAccount);
       expect(prismaService.loyaltyAccount.update).toHaveBeenCalled();
     });

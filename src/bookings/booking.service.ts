@@ -67,7 +67,9 @@ export class BookingService {
 
       await this.loyaltyService.addPoints(
         userId,
-        Math.floor(booking.totalPrice),
+        booking.room.type,
+        booking.checkIn,
+        booking.checkOut,
       );
     }
 
