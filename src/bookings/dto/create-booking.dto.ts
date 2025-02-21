@@ -1,13 +1,13 @@
-import { IsDateString, IsOptional, IsString, MinDate } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsDate, IsOptional, IsString, MinDate } from 'class-validator';
 
 export class BookingSearchDto {
-  @IsDateString()
+  @IsDate()
   @Transform(({ value }) => new Date(value))
   @MinDate(new Date())
   checkIn: string;
 
-  @IsDateString()
+  @IsDate()
   @Transform(({ value }) => new Date(value))
   @MinDate(new Date())
   checkOut: string;
@@ -25,12 +25,12 @@ export class CreateBookingDto {
   @IsString()
   roomId: string;
 
-  @IsDateString()
+  @IsDate()
   @Transform(({ value }) => new Date(value))
   @MinDate(new Date())
   checkIn: string;
 
-  @IsDateString()
+  @IsDate()
   @Transform(({ value }) => new Date(value))
   @MinDate(new Date())
   checkOut: string;

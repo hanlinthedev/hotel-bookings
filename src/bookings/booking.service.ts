@@ -160,13 +160,26 @@ export class BookingService {
         checkOut,
         totalPrice: priceDetails.discountedPrice,
         depositAmount: priceDetails.depositAmount,
-        status: 'PENDING_DEPOSIT',
+        status: 'CONFIRMED',
+      },
+      include: {
+        room: true,
       },
     });
+    const loyalty = await this.loyaltyService.addPoints(
+      userId,
+      booking.room.type,
+      booking.checkIn,
+      booking.checkOut,
+    );
 
     return {
       booking,
       priceDetails,
+      loyalty: {
+        points: loyalty.points,
+        tier: loyalty.tier,
+      },
     };
   }
 
